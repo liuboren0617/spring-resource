@@ -789,6 +789,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		if (beanDefinition instanceof AbstractBeanDefinition) {
 			try {
+				/*
+				* 1. 校验: 注册前的最后一次校验,这里的校验不同于之前的XML文件校验,
+				* 主要是对于AbstractBeanDefinition属性中的methodOverrides校验,
+				* 校验methodsOverrides是否与工厂方法并存或者methodsOverrides对应的方法根本不存在
+				* */
 				((AbstractBeanDefinition) beanDefinition).validate();
 			}
 			catch (BeanDefinitionValidationException ex) {
@@ -797,9 +802,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 		}
 
+		// 2. 尝试获取BeanDefinition
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
-		// 当这个BeanDefinition已经存在于Map的时候
+
 		if (existingDefinition != null) {
+			// 3. 对beanName 已经注册的情况的处理。如果设置了不允许bean 的覆盖，则需要抛出
 			if (!isAllowBeanDefinitionOverriding()) {
 				throw new BeanDefinitionStoreException(beanDefinition.getResourceDescription(), beanName,
 						"Cannot register bean definition [" + beanDefinition + "] for bean '" + beanName +
@@ -831,14 +838,18 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		else {
+			// 4. 如果从缓存中得到的BeanDefinition为null,判断是否已经开始创建,如果是则给缓存加上锁添加到缓存,否则直接添加到缓存
 			if (hasBeanCreationStarted()) {
 				// Cannot modify startup-time collection elements anymore (for stable iteration)
+				// 因为beanDefinitionMap 是全局变量，这里会存在并发访问的情况
 				synchronized (this.beanDefinitionMap) {
 					this.beanDefinitionMap.put(beanName, beanDefinition);
 					List<String> updatedDefinitions = new ArrayList<>(this.beanDefinitionNames.size() + 1);
 					updatedDefinitions.addAll(this.beanDefinitionNames);
 					updatedDefinitions.add(beanName);
 					this.beanDefinitionNames = updatedDefinitions;
+					// this.manualSingletonNames 手工注册的单例对象的名称列表，按注册顺序排列
+					// 从this.manualSingletonNames中移除BeanName
 					if (this.manualSingletonNames.contains(beanName)) {
 						Set<String> updatedSingletons = new LinkedHashSet<>(this.manualSingletonNames);
 						updatedSingletons.remove(beanName);
@@ -855,7 +866,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			this.frozenBeanDefinitionNames = null;
 		}
 
+		// 5. 清除解析之前留下的对应beanName的缓存
 		if (existingDefinition != null || containsSingleton(beanName)) {
+			// 重置beanName的缓存
 			resetBeanDefinition(beanName);
 		}
 		else if (isConfigurationFrozen()) {

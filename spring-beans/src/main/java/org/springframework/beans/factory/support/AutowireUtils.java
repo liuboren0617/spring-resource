@@ -113,16 +113,28 @@ abstract class AutowireUtils {
 	/**
 	 * Return whether the setter method of the given bean property is defined
 	 * in any of the given interfaces.
-	 * @param pd the PropertyDescriptor of the bean property
+	 * @param pd the PropertyDescriptor of the bean property  pd就是某个对象的一个属性
 	 * @param interfaces the Set of interfaces (Class objects)
 	 * @return whether the setter method is defined by an interface
 	 */
 	public static boolean isSetterDefinedInInterface(PropertyDescriptor pd, Set<Class<?>> interfaces) {
+		// 这里得到B的set方法
 		Method setter = pd.getWriteMethod();
+		// 如果set方法不为空
 		if (setter != null) {
+			/*
+			* getDeclaringClass
+			* 该方法返回一个Class对象，返回当前class对象的声明对象class,一般针对内部类的情况，比如A类有内部类B，那么通过B.class.getDeclaringClass()方法将获取到A的Class对象.
+			* 在使用反射对象时比如Method和Field的getDeclaringClass方法将获取到所属类对象
+			* */
+			// 所以这个targetClass 为所属类对象
+			// 这里得到了属性B的class
 			Class<?> targetClass = setter.getDeclaringClass();
 			for (Class<?> ifc : interfaces) {
+				// 判断 ifc 是否是属性B的父类(这里的ifc 则是第一步存入的接口)
+				// 如果 属性B继承了第一步存入的接口  并且 存入的接口也有相同的set方法,就会被过滤
 				if (ifc.isAssignableFrom(targetClass) &&
+						// 判断类是否有指定的public方法；
 						ClassUtils.hasMethod(ifc, setter.getName(), setter.getParameterTypes())) {
 					return true;
 				}
