@@ -135,7 +135,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 			if (StringUtils.hasText(profileSpec)) {
 				String[] specifiedProfiles = StringUtils.tokenizeToStringArray(
 						profileSpec, BeanDefinitionParserDelegate.MULTI_VALUE_ATTRIBUTE_DELIMITERS);
-				// 主要逻辑就是判断这个配置文件是否是允许存在的不允许报错
+				// 主要逻辑就是判断这个配置文件是否是允许存在,不存在则 return,不再浪费时间解析了
 				if (!getReaderContext().getEnvironment().acceptsProfiles(specifiedProfiles)) {
 					if (logger.isInfoEnabled()) {
 						logger.info("Skipped XML bean definition file due to specified profiles [" + profileSpec +
@@ -145,11 +145,11 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				}
 			}
 		}
-		/*解析前处理*/
+		/*解析前处理,该方法为空实现*/
 		preProcessXml(root);
 		/*解析bean的定义*/
 		parseBeanDefinitions(root, this.delegate);
-		/*解析后处理*/
+		/*解析后处理,该方法为空实现*/
 		postProcessXml(root);
 
 		this.delegate = parent;
