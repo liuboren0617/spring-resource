@@ -218,7 +218,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					if (singletonFactory != null) {
 						// 从工厂中获得对象
 						singletonObject = singletonFactory.getObject();
-						// 添加到早期单例对象缓存汇总
+						// 添加到早期单例对象缓存中
 						this.earlySingletonObjects.put(beanName, singletonObject);
 						// 从单例工厂的缓存中移除
 						this.singletonFactories.remove(beanName);

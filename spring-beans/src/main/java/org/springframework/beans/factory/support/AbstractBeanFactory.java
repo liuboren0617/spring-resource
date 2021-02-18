@@ -250,7 +250,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// 3.如果获取到的单例对象不为空
 		if (sharedInstance != null && args == null) {
 			if (logger.isDebugEnabled()) {
-				// 如果正在创建这个对象则抛出异常 (判断这个singletonsCurrentlyInCreation Set里有没有记录), 在10.1 getSingleton()中创建/移除的标记
+				// 如果正在创建这个对象则打印日志 (判断这个singletonsCurrentlyInCreation Set里有没有记录), 在10.1 getSingleton()中创建/移除的标记
 				if (isSingletonCurrentlyInCreation(beanName)) {
 					logger.debug("Returning eagerly cached instance of singleton bean '" + beanName +
 							"' that is not fully initialized yet - a consequence of a circular reference");
@@ -268,7 +268,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
 
-			// 5.原型模式有循环依赖的情况, 如果是则抛出异常 ,这里和10.2是相对应的 10.2原型模式生成对象前做了一个标记. 这里正是判断标记中是否存在
+			// 5.原型模式有循环依赖的情况则直接抛出异常 ,这里和10.2是相对应的 10.2原型模式生成对象前做了一个标记. 这里正是判断标记中是否存在
 			if (isPrototypeCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
@@ -1695,8 +1695,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			// 尝试从缓存获得Object
 			object = getCachedObjectForFactoryBean(beanName);
 		}
+
 		if (object == null) {
 			// Return bean instance from factory.
+			// 走到这里说明bean 一定是FactoryBean类型的, 否则上面就return了
 			FactoryBean<?> factory = (FactoryBean<?>) beanInstance;
 			// Caches object obtained from FactoryBean if it is a singleton.
 			if (mbd == null && containsBeanDefinition(beanName)) {

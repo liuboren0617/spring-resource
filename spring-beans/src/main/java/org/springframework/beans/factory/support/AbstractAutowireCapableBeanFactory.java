@@ -1063,10 +1063,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
-					// 实例化前调用,可能会生成一个代理的bean(AOP的逻辑)
+					// 实例化前的后处理器应用,可能会生成一个代理的bean(AOP的逻辑)
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
 					if (bean != null) {
-						// 实例化后调用(Spring 中的规则是在bean 的初始化后尽
+						// 实例化后的后处理器应用(Spring 中的规则是在bean 的初始化后尽
 						//可能保证将注册的后处理器的postProcessA丘erlnitialization 方法应用到该bean中,因为后序判断bean不为空直接就return了
 						// 所以在这里就调用了
 						bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
